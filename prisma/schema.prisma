@@ -1,0 +1,158 @@
+// This is your Prisma schema file for TareqsDrip Email System
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Email Preferences Model - Controls what emails users receive
+model EmailPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique // Clerk user ID
+  
+  // Marketing emails
+  salesEmails       Boolean @default(true)  // Sales announcements
+  offerEmails       Boolean @default(true)  // Special offers & promotions
+  newProductEmails  Boolean @default(true)  // New product launches
+  
+  // Transactional emails (typically always on)
+  orderConfirmation Boolean @default(true)  // Order confirmations
+  orderUpdates      Boolean @default(true)  // Shipping & delivery updates
+  
+  // General
+  emailVerified     Boolean @default(false)
+  unsubscribedAll   Boolean @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("email_preferences")
+}
+
+// Admin Email Settings - Global email feature toggles
+model EmailSettings {
+  id        String   @id @default(cuid())
+  
+  // Feature flags controlled by admin
+  enableSalesEmails      Boolean @default(true)
+  enableOfferEmails      Boolean @default(true)
+  enableNewProductEmails Boolean @default(true)
+  enableOrderEmails      Boolean @default(true)
+  
+  // Global settings
+  fromEmail String  @default("noreply@tareqsdrip.com")
+  fromName  String  @default("TareqsDrip")
+  replyTo   String?
+  
+  // Rate limiting
+  maxEmailsPerDay Int @default(5) // Max marketing emails per user per day
+  
+  updatedAt DateTime @updatedAt
+  updatedBy String   // Admin user ID who made the change
+  
+  @@map("email_settings")
+}
+
+// Email Campaign - For tracking bulk email campaigns
+model EmailCampaign {
+  id          String   @id @default(cuid())
+  
+  name        String
+  description String?
+  type        String   // SALES_ANNOUNCEMENT, SPECIAL_OFFER, NEW_PRODUCT
+  
+  subject     String
+  templateData Json    // Dynamic data for the email template
+  
+  // Campaign settings
+  status      String   @default("DRAFT") // DRAFT, SCHEDULED, SENDING, SENT, FAILED
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  
+  // Targeting
+  targetAll   Boolean  @default(false)
+  targetUserIds String[] // Specific users if not targeting all
+  
+  // Stats
+  totalRecipients  Int @default(0)
+  successCount     Int @default(0)
+  failureCount     Int @default(0)
+  openCount        Int @default(0)
+  clickCount       Int @default(0)
+  
+  createdBy String   // Admin user ID
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  logs      EmailLog[]
+  
+  @@map("email_campaigns")
+}
+
+// Email Log - Track all emails sent
+model EmailLog {
+  id          String   @id @default(cuid())
+  
+  campaignId  String?
+  campaign    EmailCampaign? @relation(fields: [campaignId], references: [id])
+  
+  userId      String   // Recipient Clerk user ID
+  email       String   // Recipient email address
+  
+  type        String   // EMAIL_TEMPLATE_TYPE enum
+  subject     String
+  
+  status      String   // QUEUED, SENT, FAILED, BOUNCED, DELIVERED, OPENED, CLICKED
+  error       String?
+  
+  // SendGrid tracking
+  messageId   String?  // SendGrid message ID
+  
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+  
+  metadata    Json?    // Additional tracking data
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([campaignId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("email_logs")
+}
+
+// Order Tracking (simplified for email context)
+model Order {
+  id              String   @id @default(cuid())
+  orderNumber     String   @unique
+  userId          String
+  
+  status          String   // PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
+  
+  total           Decimal  @db.Decimal(10, 2)
+  
+  shippingAddress Json
+  
+  trackingNumber  String?
+  carrier         String?
+  
+  estimatedDelivery DateTime?
+  deliveredAt       DateTime?
+  
+  items           Json     // Order items data
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([orderNumber])
+  @@map("orders")
+}

@@ -1,0 +1,47 @@
+{
+  "name": "tareqsdrip-email-system",
+  "version": "1.0.0",
+  "description": "Automated email system for TareqsDrip e-commerce platform",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "inngest": "npx inngest-cli@latest dev",
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@clerk/nextjs": "^5.0.0",
+    "@neondatabase/serverless": "^0.9.0",
+    "@prisma/adapter-neon": "^5.9.0",
+    "@prisma/client": "^5.9.0",
+    "@sendgrid/mail": "^8.1.6",
+    "@types/nodemailer": "^7.0.4",
+    "inngest": "^3.15.0",
+    "next": "^15.0.0",
+    "nodemailer": "^7.0.11",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/ws": "^8.5.10",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^8.0.0",
+    "eslint-config-next": "^15.0.0",
+    "postcss": "^8.4.33",
+    "prisma": "^5.9.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.3.0"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
