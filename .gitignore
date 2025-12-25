@@ -1,13 +1,26 @@
-node_modules/
-.next/
-.env
-.env.local
-dist/
-build/
+
+# Dependencies
+node_modules
+
+# Next.js build output
+.next
+out
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dev.log
 *.log
-.DS_Store
+
+# Runtime artifacts
+.vercel
+coverage
+tmp
+
+# Editors and OS
 .vscode/
 .idea/
-*.swp
-*.swo
-.prisma/
+.DS_Store
+
