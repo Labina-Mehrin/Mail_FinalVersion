@@ -10,10 +10,8 @@ const nextConfig = {
       },
     ],
   },
-  experimental: {
-    // Ensure Next.js uses this workspace as the root for output tracing
-    outputFileTracingRoot: process.cwd(),
-  },
+  // Ensure Next.js uses this workspace as the root for output tracing
+  outputFileTracingRoot: process.cwd(),
 };
 
 export default nextConfig;

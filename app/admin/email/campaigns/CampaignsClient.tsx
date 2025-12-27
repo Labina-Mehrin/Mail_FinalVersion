@@ -108,7 +108,7 @@ export default function CampaignsClient() {
   };
 
   const handleSend = async (id: string) => {
-    if (!confirm('Are you sure you want to send this campaign? This will send emails to real users.')) return;
+    if (!confirm('Send this campaign to all recipients? This will send emails to real users.')) return;
 
     try {
       const res = await fetch(`/api/admin/email/campaigns/${id}/send`, {
@@ -116,11 +116,14 @@ export default function CampaignsClient() {
         credentials: 'include',
       });
 
+      const data = await res.json();
+      
       if (res.ok) {
-        alert('Campaign queued for sending!');
+        const msg = `Campaign sent!\nSuccess: ${data.results?.success || 0}\nSkipped: ${data.results?.skipped || 0}\nFailed: ${data.results?.failed || 0}`;
+        alert(msg);
         fetchData();
       } else {
-        alert('Failed to send campaign');
+        alert(data?.error || 'Failed to send campaign');
       }
     } catch (error) {
       console.error('Error sending campaign:', error);
@@ -482,7 +485,7 @@ function CampaignTableRow({
                 onClick={() => onSend(campaign.id)}
                 className="px-3 py-1.5 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition text-xs"
               >
-                Send
+                Send to All
               </button>
               <button
                 onClick={() => onDelete(campaign.id)}
@@ -585,7 +588,7 @@ function CampaignCard({
             onClick={() => onSend(campaign.id)}
             className="flex-1 px-3 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition text-sm"
           >
-            Send Now
+            Send to All
           </button>
         )}
       </div>
@@ -609,6 +612,10 @@ function CreateCampaignModal({
     templateData: Record<string, any>;
     targetAll: boolean;
     targetUserIds: string[];
+    startDate: string;
+    endDate: string;
+    discount: number | null;
+    imageUrl: string;
   };
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<CreateCampaignForm>({
@@ -619,6 +626,10 @@ function CreateCampaignModal({
     templateData: {},
     targetAll: true,
     targetUserIds: [],
+    startDate: '',
+    endDate: '',
+    discount: null,
+    imageUrl: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -748,6 +759,54 @@ function CreateCampaignModal({
                 className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Get 50% off this summer!"
               />
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Start Date</label>
+                <input
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/80 text-sm mb-2">End Date</label>
+                <input
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Discount (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.discount ?? ''}
+                  onChange={(e) => setFormData({ ...formData, discount: e.target.value ? parseInt(e.target.value) : null })}
+                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="20"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/80 text-sm mb-2">Image URL</label>
+                <input
+                  type="url"
+                  value={formData.imageUrl}
+                  onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                  className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="https://..."
+                />
+              </div>
             </div>
 
             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">

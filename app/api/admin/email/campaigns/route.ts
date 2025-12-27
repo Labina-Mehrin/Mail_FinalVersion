@@ -83,6 +83,10 @@ export async function POST(req: NextRequest) {
       scheduledAt,
       targetAll,
       targetUserIds,
+      startDate,
+      endDate,
+      discount,
+      imageUrl,
     } = body;
 
     // Validate template type
@@ -102,6 +106,10 @@ export async function POST(req: NextRequest) {
         templateData,
         status: scheduledAt ? 'SCHEDULED' : 'DRAFT',
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        discount: discount ?? null,
+        imageUrl: imageUrl ?? null,
         targetAll,
         targetUserIds: targetUserIds || [],
         createdBy: userId,

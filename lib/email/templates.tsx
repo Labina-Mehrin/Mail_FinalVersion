@@ -100,14 +100,23 @@ const EmailWrapper = ({ children, previewText }: { children: React.ReactNode; pr
 
 // Order Confirmation Email
 export const orderConfirmationTemplate = (data: {
-  userName: string;
-  orderNumber: string;
-  orderTotal: string;
-  items: Array<{ name: string; quantity: number; price: string }>;
-  shippingAddress: string;
-  estimatedDelivery: string;
+  userName?: string;
+  orderNumber?: string;
+  orderTotal?: string;
+  items?: Array<{ name: string; quantity: number; price: string }>;
+  shippingAddress?: string;
+  estimatedDelivery?: string;
+  imageUrl?: string;
 }) => {
-  const itemsHtml = data.items.map(item => `
+  const userName = data.userName ?? 'there';
+  const orderNumber = data.orderNumber ?? '—';
+  const orderTotal = data.orderTotal ?? '$0.00';
+  const items = data.items ?? [];
+  const shippingAddress = data.shippingAddress ?? 'Address on file';
+  const estimatedDelivery = data.estimatedDelivery ?? 'TBD';
+  const img = data.imageUrl;
+
+  const itemsHtml = items.map(item => `
     <tr>
       <td style="padding: 10px; border-bottom: 1px solid #e9ecef;">${item.name}</td>
       <td style="padding: 10px; border-bottom: 1px solid #e9ecef; text-align: center;">${item.quantity}</td>
@@ -116,14 +125,16 @@ export const orderConfirmationTemplate = (data: {
   `).join('');
 
   return EmailWrapper({
-    previewText: `Order ${data.orderNumber} confirmed - Thank you for your purchase!`,
+    previewText: `Order ${orderNumber} confirmed - Thank you for your purchase!`,
     children: `
+      
+      
       <h1 style="color: #667eea; margin-bottom: 10px;">Order Confirmed! 🎉</h1>
-      <p>Hi ${data.userName},</p>
+      <p>Hi ${userName},</p>
       <p>Thank you for your order! We've received your purchase and are getting it ready.</p>
       
       <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <h3 style="margin-top: 0;">Order #${data.orderNumber}</h3>
+        <h3 style="margin-top: 0;">Order #${orderNumber}</h3>
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr style="background: #e9ecef;">
@@ -138,16 +149,16 @@ export const orderConfirmationTemplate = (data: {
           <tfoot>
             <tr>
               <td colspan="2" style="padding: 15px 10px; font-weight: bold;">Total</td>
-              <td style="padding: 15px 10px; text-align: right; font-weight: bold; color: #667eea;">${data.orderTotal}</td>
+              <td style="padding: 15px 10px; text-align: right; font-weight: bold; color: #667eea;">${orderTotal}</td>
             </tr>
           </tfoot>
         </table>
       </div>
 
-      <p><strong>Shipping Address:</strong><br>${data.shippingAddress}</p>
-      <p><strong>Estimated Delivery:</strong> ${data.estimatedDelivery}</p>
+      <p><strong>Shipping Address:</strong><br>${shippingAddress}</p>
+      <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
 
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/orders/${data.orderNumber}" class="button">Track Your Order</a>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/orders/${orderNumber}" class="button">Track Your Order</a>
 
       <p>If you have any questions, feel free to contact our support team.</p>
     `
@@ -156,27 +167,37 @@ export const orderConfirmationTemplate = (data: {
 
 // Order Shipped Email
 export const orderShippedTemplate = (data: {
-  userName: string;
-  orderNumber: string;
-  trackingNumber: string;
-  carrier: string;
-  estimatedDelivery: string;
+  userName?: string;
+  orderNumber?: string;
+  trackingNumber?: string;
+  carrier?: string;
+  estimatedDelivery?: string;
+  imageUrl?: string;
 }) => {
+  const userName = data.userName ?? 'there';
+  const orderNumber = data.orderNumber ?? '—';
+  const trackingNumber = data.trackingNumber ?? '—';
+  const carrier = data.carrier ?? 'Carrier';
+  const estimatedDelivery = data.estimatedDelivery ?? 'TBD';
+  const img = data.imageUrl;
+
   return EmailWrapper({
-    previewText: `Your order ${data.orderNumber} has shipped!`,
+    previewText: `Your order ${orderNumber} has shipped!`,
     children: `
+      
+      
       <h1 style="color: #667eea; margin-bottom: 10px;">Your Order is on the Way! 🚚</h1>
-      <p>Hi ${data.userName},</p>
+      <p>Hi ${userName},</p>
       <p>Great news! Your order has been shipped and is heading your way.</p>
       
       <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <p><strong>Order Number:</strong> #${data.orderNumber}</p>
-        <p><strong>Tracking Number:</strong> ${data.trackingNumber}</p>
-        <p><strong>Carrier:</strong> ${data.carrier}</p>
-        <p><strong>Estimated Delivery:</strong> ${data.estimatedDelivery}</p>
+        <p><strong>Order Number:</strong> #${orderNumber}</p>
+        <p><strong>Tracking Number:</strong> ${trackingNumber}</p>
+        <p><strong>Carrier:</strong> ${carrier}</p>
+        <p><strong>Estimated Delivery:</strong> ${estimatedDelivery}</p>
       </div>
 
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/orders/${data.orderNumber}" class="button">Track Shipment</a>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/orders/${orderNumber}" class="button">Track Shipment</a>
 
       <p>You'll receive another email once your package is delivered.</p>
     `
@@ -185,20 +206,28 @@ export const orderShippedTemplate = (data: {
 
 // Order Delivered Email
 export const orderDeliveredTemplate = (data: {
-  userName: string;
-  orderNumber: string;
-  deliveryDate: string;
+  userName?: string;
+  orderNumber?: string;
+  deliveryDate?: string;
+  imageUrl?: string;
 }) => {
+  const userName = data.userName ?? 'there';
+  const orderNumber = data.orderNumber ?? '—';
+  const deliveryDate = data.deliveryDate ?? 'today';
+  const img = data.imageUrl;
+
   return EmailWrapper({
-    previewText: `Your order ${data.orderNumber} has been delivered!`,
+    previewText: `Your order ${orderNumber} has been delivered!`,
     children: `
+      
+      
       <h1 style="color: #667eea; margin-bottom: 10px;">Your Order Has Arrived! 📦</h1>
-      <p>Hi ${data.userName},</p>
-      <p>Your order has been successfully delivered on ${data.deliveryDate}.</p>
+      <p>Hi ${userName},</p>
+      <p>Your order has been successfully delivered on ${deliveryDate}.</p>
       
       <p>We hope you love your new items! If you have a moment, we'd appreciate it if you could leave a review.</p>
 
-      <a href="${process.env.NEXT_PUBLIC_APP_URL}/orders/${data.orderNumber}/review" class="button">Leave a Review</a>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL}/orders/${orderNumber}/review" class="button">Leave a Review</a>
 
       <p>If there are any issues with your order, please contact us immediately.</p>
     `
@@ -207,28 +236,36 @@ export const orderDeliveredTemplate = (data: {
 
 // Sales Announcement Email
 export const salesAnnouncementTemplate = (data: {
-  userName: string;
-  saleTitle: string;
-  saleDescription: string;
-  discountPercentage: number;
-  startDate: string;
-  endDate: string;
+  userName?: string;
+  saleTitle?: string;
+  saleDescription?: string;
+  discountPercentage?: number;
+  startDate?: string;
+  endDate?: string;
   imageUrl?: string;
 }) => {
+  const userName = data.userName ?? 'there';
+  const saleTitle = data.saleTitle ?? 'Big Sale';
+  const saleDescription = data.saleDescription ?? 'Don\'t miss our latest offers.';
+  const discount = data.discountPercentage ?? 10;
+  const start = data.startDate ?? 'TBD';
+  const end = data.endDate ?? 'TBD';
+  const img = data.imageUrl;
+
   return EmailWrapper({
-    previewText: `${data.saleTitle} - Up to ${data.discountPercentage}% off!`,
+    previewText: `${saleTitle} - Up to ${discount}% off!`,
     children: `
-      <h1 style="color: #667eea; margin-bottom: 10px;">🔥 ${data.saleTitle}</h1>
-      <p>Hi ${data.userName},</p>
+      <h1 style="color: #667eea; margin-bottom: 10px;">🔥 ${saleTitle}</h1>
+      <p>Hi ${userName},</p>
       
-      ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.saleTitle}" style="width: 100%; max-width: 540px; border-radius: 8px; margin: 20px 0;" />` : ''}
+      ${img ? `<img src="${img}" alt="${saleTitle}" style="width: 100%; max-width: 540px; border-radius: 8px; margin: 20px 0;" />` : ''}
       
-      <p style="font-size: 18px; font-weight: 600; color: #667eea;">Save up to ${data.discountPercentage}% on futuristic fashion!</p>
+      <p style="font-size: 18px; font-weight: 600; color: #667eea;">Save up to ${discount}% on futuristic fashion!</p>
       
-      <p>${data.saleDescription}</p>
+      <p>${saleDescription}</p>
       
       <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-        <p><strong>Sale Period:</strong> ${data.startDate} - ${data.endDate}</p>
+        <p><strong>Sale Period:</strong> ${start} - ${end}</p>
       </div>
 
       <a href="${process.env.NEXT_PUBLIC_APP_URL}/sales" class="button">Shop Now</a>
@@ -240,23 +277,29 @@ export const salesAnnouncementTemplate = (data: {
 
 // Special Offer Email
 export const specialOfferTemplate = (data: {
-  userName: string;
-  offerTitle: string;
-  offerDescription: string;
+  userName?: string;
+  offerTitle?: string;
+  offerDescription?: string;
   couponCode?: string;
-  expiryDate: string;
+  expiryDate?: string;
   imageUrl?: string;
 }) => {
+  const userName = data.userName ?? 'there';
+  const offerTitle = data.offerTitle ?? 'Special Offer';
+  const offerDescription = data.offerDescription ?? 'Check out this exclusive deal!';
+  const expiryDate = data.expiryDate ?? 'Limited time';
+  const img = data.imageUrl;
+
   return EmailWrapper({
-    previewText: `Exclusive offer just for you: ${data.offerTitle}`,
+    previewText: `Exclusive offer just for you: ${offerTitle}`,
     children: `
       <h1 style="color: #667eea; margin-bottom: 10px;">✨ Exclusive Offer for You!</h1>
-      <p>Hi ${data.userName},</p>
+      <p>Hi ${userName},</p>
       
-      ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.offerTitle}" style="width: 100%; max-width: 540px; border-radius: 8px; margin: 20px 0;" />` : ''}
+      ${img ? `<img src="${img}" alt="${offerTitle}" style="width: 100%; max-width: 540px; border-radius: 8px; margin: 20px 0;" />` : ''}
       
-      <h2 style="color: #333;">${data.offerTitle}</h2>
-      <p>${data.offerDescription}</p>
+      <h2 style="color: #333;">${offerTitle}</h2>
+      <p>${offerDescription}</p>
       
       ${data.couponCode ? `
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
@@ -265,7 +308,7 @@ export const specialOfferTemplate = (data: {
         </div>
       ` : ''}
       
-      <p><strong>Offer expires:</strong> ${data.expiryDate}</p>
+      <p><strong>Offer expires:</strong> ${expiryDate}</p>
 
       <a href="${process.env.NEXT_PUBLIC_APP_URL}/shop" class="button">Start Shopping</a>
 
@@ -276,29 +319,36 @@ export const specialOfferTemplate = (data: {
 
 // New Product Launch Email
 export const newProductTemplate = (data: {
-  userName: string;
-  productName: string;
-  productDescription: string;
-  price: string;
-  productUrl: string;
+  userName?: string;
+  productName?: string;
+  productDescription?: string;
+  price?: string;
+  productUrl?: string;
   imageUrl?: string;
 }) => {
+  const userName = data.userName ?? 'there';
+  const productName = data.productName ?? 'New Product';
+  const productDescription = data.productDescription ?? 'Check out our latest arrival!';
+  const price = data.price ?? 'See pricing';
+  const productUrl = data.productUrl ?? `${process.env.NEXT_PUBLIC_APP_URL}/shop`;
+  const img = data.imageUrl;
+
   return EmailWrapper({
-    previewText: `New arrival: ${data.productName} is here!`,
+    previewText: `New arrival: ${productName} is here!`,
     children: `
       <h1 style="color: #667eea; margin-bottom: 10px;">🚀 New Arrival!</h1>
-      <p>Hi ${data.userName},</p>
+      <p>Hi ${userName},</p>
       
       <p>Check out the latest addition to our futuristic fashion collection:</p>
       
-      ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.productName}" style="width: 100%; max-width: 540px; border-radius: 8px; margin: 20px 0;" />` : ''}
+      ${img ? `<img src="${img}" alt="${productName}" style="width: 100%; max-width: 540px; border-radius: 8px; margin: 20px 0;" />` : ''}
       
-      <h2 style="color: #333;">${data.productName}</h2>
-      <p>${data.productDescription}</p>
+      <h2 style="color: #333;">${productName}</h2>
+      <p>${productDescription}</p>
       
-      <p style="font-size: 24px; font-weight: bold; color: #667eea; margin: 20px 0;">${data.price}</p>
+      <p style="font-size: 24px; font-weight: bold; color: #667eea; margin: 20px 0;">${price}</p>
 
-      <a href="${data.productUrl}" class="button">View Product</a>
+      <a href="${productUrl}" class="button">View Product</a>
 
       <p>Be among the first to own this exclusive piece!</p>
     `
@@ -307,14 +357,20 @@ export const newProductTemplate = (data: {
 
 // Welcome Email
 export const welcomeTemplate = (data: {
-  userName: string;
-  firstName: string;
+  userName?: string;
+  firstName?: string;
+  imageUrl?: string;
 }) => {
+  const firstName = data.firstName ?? data.userName ?? 'there';
+  const img = data.imageUrl;
   return EmailWrapper({
-    previewText: `Welcome to TareqsDrip, ${data.firstName}!`,
+    previewText: `Welcome to TareqsDrip, ${firstName}!`,
     children: `
       <h1 style="color: #667eea; margin-bottom: 10px;">Welcome to TareqsDrip! 🎉</h1>
-      <p>Hi ${data.firstName},</p>
+      
+      
+      
+      <p>Hi ${firstName},</p>
       
       <p>We're thrilled to have you join our community of futuristic fashion enthusiasts!</p>
       

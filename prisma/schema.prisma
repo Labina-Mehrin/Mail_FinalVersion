@@ -80,6 +80,12 @@ model EmailCampaign {
   scheduledAt DateTime?
   sentAt      DateTime?
   
+  // Campaign dates and metadata
+  startDate   DateTime?
+  endDate     DateTime?
+  discount    Int?
+  imageUrl    String?
+  
   // Targeting
   targetAll   Boolean  @default(false)
   targetUserIds String[] // Specific users if not targeting all
@@ -161,4 +167,16 @@ model Order {
   @@index([userId])
   @@index([orderNumber])
   @@map("orders")
+}
+
+// Recipient - Store email recipients (Clerk or not)
+model Recipient {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  firstName       String?
+  lastName        String?
+  unsubscribedAll Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  
+  @@map("recipients")
 }

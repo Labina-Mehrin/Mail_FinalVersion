@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import transporter from './config';
 import { emailConfig } from './config';
 import { EmailTemplateType, getEmailTemplate } from './templates';
@@ -24,54 +25,85 @@ export interface BulkEmailOptions {
  * Check if user has opted in for a specific email type
  */
 export async function canSendEmail(
-  userId: string,
-  templateType: EmailTemplateType
+  userId: string | null,
+  templateType: EmailTemplateType,
+  recipientEmail?: string
 ): Promise<boolean> {
   try {
-    // Get user preferences
-    const preferences = await prisma.emailPreference.findUnique({
-      where: { userId },
-    });
-
-    // If no preferences found, default to true for transactional, false for marketing
-    if (!preferences) {
-      const transactionalTypes = [
-        EmailTemplateType.ORDER_CONFIRMATION,
-        EmailTemplateType.ORDER_SHIPPED,
-        EmailTemplateType.ORDER_DELIVERED,
-        EmailTemplateType.WELCOME,
-      ];
-      return transactionalTypes.includes(templateType);
+    // 1) Existing userId-based check (as you already have)
+    if (userId) {
+      const preferences = await prisma.emailPreference.findUnique({ 
+        where: { userId } 
+      });
+      
+      if (preferences) {
+        if (preferences.unsubscribedAll) {
+          return [
+            EmailTemplateType.ORDER_CONFIRMATION,
+            EmailTemplateType.ORDER_SHIPPED,
+            EmailTemplateType.ORDER_DELIVERED,
+          ].includes(templateType);
+        }
+        
+        switch (templateType) {
+          case EmailTemplateType.SALES_ANNOUNCEMENT:
+            return preferences.salesEmails;
+          case EmailTemplateType.SPECIAL_OFFER:
+          case EmailTemplateType.PROMOTIONAL:
+            return preferences.offerEmails;
+          case EmailTemplateType.NEW_PRODUCT:
+            return preferences.newProductEmails;
+          case EmailTemplateType.ORDER_CONFIRMATION:
+          case EmailTemplateType.ORDER_SHIPPED:
+          case EmailTemplateType.ORDER_DELIVERED:
+            return preferences.orderUpdates;
+          case EmailTemplateType.WELCOME:
+            return true;
+          default:
+            return false;
+        }
+      }
     }
 
-    // If user unsubscribed from all emails
-    if (preferences.unsubscribedAll) {
-      // Still allow critical transactional emails
-      return [
-        EmailTemplateType.ORDER_CONFIRMATION,
-        EmailTemplateType.ORDER_SHIPPED,
-        EmailTemplateType.ORDER_DELIVERED,
-      ].includes(templateType);
+    // 2) Fallback by email for non-Clerk recipients
+    if (recipientEmail) {
+      const rec = await prisma.recipient.findUnique({
+        where: { email: recipientEmail.toLowerCase() },
+      });
+      
+      if (rec?.unsubscribedAll) {
+        // Block everything if recipient unsubscribed
+        return [
+          EmailTemplateType.ORDER_CONFIRMATION,
+          EmailTemplateType.ORDER_SHIPPED,
+          EmailTemplateType.ORDER_DELIVERED,
+        ].includes(templateType);
+      }
+
+      // No explicit unsubscribe: allow both transactional and marketing
+      switch (templateType) {
+        case EmailTemplateType.ORDER_CONFIRMATION:
+        case EmailTemplateType.ORDER_SHIPPED:
+        case EmailTemplateType.ORDER_DELIVERED:
+        case EmailTemplateType.WELCOME:
+        case EmailTemplateType.SALES_ANNOUNCEMENT:
+        case EmailTemplateType.SPECIAL_OFFER:
+        case EmailTemplateType.PROMOTIONAL:
+        case EmailTemplateType.NEW_PRODUCT:
+          return true;
+        default:
+          return false;
+      }
     }
 
-    // Check specific preferences based on template type
-    switch (templateType) {
-      case EmailTemplateType.SALES_ANNOUNCEMENT:
-        return preferences.salesEmails;
-      case EmailTemplateType.SPECIAL_OFFER:
-      case EmailTemplateType.PROMOTIONAL:
-        return preferences.offerEmails;
-      case EmailTemplateType.NEW_PRODUCT:
-        return preferences.newProductEmails;
-      case EmailTemplateType.ORDER_CONFIRMATION:
-      case EmailTemplateType.ORDER_SHIPPED:
-      case EmailTemplateType.ORDER_DELIVERED:
-        return preferences.orderUpdates;
-      case EmailTemplateType.WELCOME:
-        return true; // Always send welcome emails
-      default:
-        return false;
-    }
+    // 3) No prefs and no email record — keep your original defaults
+    const transactionalTypes = [
+      EmailTemplateType.ORDER_CONFIRMATION,
+      EmailTemplateType.ORDER_SHIPPED,
+      EmailTemplateType.ORDER_DELIVERED,
+      EmailTemplateType.WELCOME,
+    ];
+    return transactionalTypes.includes(templateType);
   } catch (error) {
     console.error('Error checking email preferences:', error);
     return false;
@@ -128,7 +160,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
     }
 
     // Check user preferences
-    const canSend = await canSendEmail(options.userId, options.templateType);
+    const canSend = await canSendEmail(options.userId, options.templateType, options.to);
     if (!canSend) {
       console.log(`User ${options.userId} has opted out of ${options.templateType}`);
       
@@ -148,12 +180,40 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
       return false;
     }
 
-    // Send email via Mailtrap
+    // Plain-text fallback from HTML
+    const textFallback = options.html
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // Basic anti-spam headers
+    const headers: Record<string, string> = {
+      "X-Entity-Ref-ID": crypto.randomUUID(),
+      "X-Mailer": "Next.js-Mailer",
+    };
+
+    // Add List-Unsubscribe for marketing templates
+    const marketingTypes = [
+      EmailTemplateType.SALES_ANNOUNCEMENT,
+      EmailTemplateType.SPECIAL_OFFER,
+      EmailTemplateType.PROMOTIONAL,
+      EmailTemplateType.NEW_PRODUCT,
+    ];
+
+    if (marketingTypes.includes(options.templateType)) {
+      const unsubscribeUrl = `${process.env.NEXT_PUBLIC_APP_URL}/email/unsubscribe?u=${options.userId}`;
+      headers["List-Unsubscribe"] = `<${unsubscribeUrl}>, <mailto:unsubscribe@${emailConfig.from.email.split("@")[1]}>`;
+      headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+    }
+
     const mailOptions = {
       from: `${emailConfig.from.name} <${emailConfig.from.email}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
+      text: textFallback,
+      headers,
     };
 
     const info = await transporter.sendMail(mailOptions);

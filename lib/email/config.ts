@@ -1,25 +1,27 @@
 import nodemailer from 'nodemailer';
 
-// Initialize Mailtrap with API token
-if (!process.env.MAILTRAP_API_TOKEN) {
-  throw new Error('MAILTRAP_API_TOKEN is not defined in environment variables');
+if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  throw new Error('SMTP credentials are missing in environment variables');
 }
 
-// Create Mailtrap transporter
 export const transporter = nodemailer.createTransport({
-  host: 'send.api.mailtrap.io',
-  port: 587,
-  secure: false, // use TLS
+  host: process.env.SMTP_HOST,          // smtp.gmail.com
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false,                        // STARTTLS on 587
   auth: {
-    user: 'api',
-    pass: process.env.MAILTRAP_API_TOKEN,
+    user: process.env.SMTP_USER,        // youraddress@gmail.com
+    pass: process.env.SMTP_PASS,        // the App Password
   },
+  pool: true,
+  maxConnections: 5,
+  maxMessages: 100,
+  tls: { rejectUnauthorized: true },
 });
 
 export const emailConfig = {
   from: {
-    email: process.env.MAILTRAP_FROM_EMAIL || 'hello@demomailtrap.com',
-    name: process.env.MAILTRAP_FROM_NAME || 'TareqsDrip',
+    email: process.env.SMTP_FROM_EMAIL || 'youraddress@gmail.com',
+    name: process.env.SMTP_FROM_NAME || 'TareqsDrip',
   },
 };
 

@@ -55,7 +55,7 @@ export function FeatureCard({
   href: string;
   title: string;
   description: string;
-  accent: "purple" | "pink" | "blue";
+  accent: "purple" | "pink" | "blue" | "green";
   icon: React.ReactNode;
 }) {
   const accentClass =
@@ -63,6 +63,8 @@ export function FeatureCard({
       ? "from-purple-500 to-indigo-500"
       : accent === "pink"
       ? "from-pink-500 to-purple-500"
+      : accent === "green"
+      ? "from-green-500 to-emerald-500"
       : "from-indigo-500 to-sky-500";
 
   return (
