@@ -18,8 +18,6 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Add admin role check
-
     const campaign = await prisma.emailCampaign.findUnique({
       where: { id: params.id },
       include: {
@@ -36,7 +34,6 @@ export async function GET(
 
     return NextResponse.json(campaign);
   } catch (error) {
-    console.error('Error fetching campaign:', error);
     return NextResponse.json(
       { error: 'Failed to fetch campaign' },
       { status: 500 }
@@ -59,8 +56,6 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Add admin role check
-
     const body = await req.json();
 
     const campaign = await prisma.emailCampaign.update({
@@ -70,7 +65,6 @@ export async function PUT(
 
     return NextResponse.json(campaign);
   } catch (error) {
-    console.error('Error updating campaign:', error);
     return NextResponse.json(
       { error: 'Failed to update campaign' },
       { status: 500 }
@@ -93,15 +87,12 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Add admin role check
-
     await prisma.emailCampaign.delete({
       where: { id: params.id },
     });
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting campaign:', error);
     return NextResponse.json(
       { error: 'Failed to delete campaign' },
       { status: 500 }

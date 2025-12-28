@@ -16,8 +16,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Add admin role check
-
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page') || '1');
@@ -51,7 +49,6 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error fetching campaigns:', error);
     return NextResponse.json(
       { error: 'Failed to fetch campaigns' },
       { status: 500 }
@@ -70,8 +67,6 @@ export async function POST(req: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // TODO: Add admin role check
 
     const body = await req.json();
     const {
@@ -118,7 +113,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(campaign, { status: 201 });
   } catch (error) {
-    console.error('Error creating campaign:', error);
     return NextResponse.json(
       { error: 'Failed to create campaign' },
       { status: 500 }

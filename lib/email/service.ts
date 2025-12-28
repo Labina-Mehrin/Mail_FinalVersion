@@ -105,7 +105,6 @@ export async function canSendEmail(
     ];
     return transactionalTypes.includes(templateType);
   } catch (error) {
-    console.error('Error checking email preferences:', error);
     return false;
   }
 }
@@ -142,7 +141,6 @@ export async function isEmailTypeEnabled(
         return true;
     }
   } catch (error) {
-    console.error('Error checking email settings:', error);
     return true; // Default to enabled on error
   }
 }
@@ -155,15 +153,12 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
     // Check if email type is enabled globally
     const isEnabled = await isEmailTypeEnabled(options.templateType);
     if (!isEnabled) {
-      console.log(`Email type ${options.templateType} is disabled globally`);
       return false;
     }
 
     // Check user preferences
     const canSend = await canSendEmail(options.userId, options.templateType, options.to);
     if (!canSend) {
-      console.log(`User ${options.userId} has opted out of ${options.templateType}`);
-      
       // Log as skipped
       await prisma.emailLog.create({
         data: {
@@ -235,8 +230,6 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
 
     return true;
   } catch (error: any) {
-    console.error('Error sending email:', error);
-
     // Log failed send
     await prisma.emailLog.create({
       data: {
@@ -270,7 +263,6 @@ export async function sendBulkEmails(options: BulkEmailOptions): Promise<{
   // Check if email type is enabled globally
   const isEnabled = await isEmailTypeEnabled(options.templateType);
   if (!isEnabled) {
-    console.log(`Email type ${options.templateType} is disabled globally`);
     return { success: 0, failed: 0, skipped: options.recipients.length };
   }
 

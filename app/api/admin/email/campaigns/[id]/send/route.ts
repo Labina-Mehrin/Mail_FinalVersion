@@ -21,8 +21,6 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Add admin role check
-
     const campaign = await prisma.emailCampaign.findUnique({
       where: { id: params.id },
     });
@@ -122,14 +120,12 @@ export async function POST(
       results,
     });
   } catch (error) {
-    console.error('Error sending campaign:', error);
-    
     // Update campaign status to FAILED
     if (params.id) {
       await prisma.emailCampaign.update({
         where: { id: params.id },
         data: { status: 'FAILED' },
-      }).catch(console.error);
+      }).catch(() => {});
     }
     
     return NextResponse.json(

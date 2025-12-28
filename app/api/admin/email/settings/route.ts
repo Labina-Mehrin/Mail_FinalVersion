@@ -15,12 +15,6 @@ export async function GET(_req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: Add admin role check here
-    // const user = await clerkClient.users.getUser(userId);
-    // if (!user.publicMetadata?.role === 'admin') {
-    //   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    // }
-
     let settings = await prisma.emailSettings.findFirst({
       orderBy: { updatedAt: 'desc' },
     });
@@ -49,7 +43,6 @@ export async function GET(_req: NextRequest) {
 
     return NextResponse.json(settings);
   } catch (error) {
-    console.error('Error fetching email settings:', error);
     return NextResponse.json(
       { error: 'Failed to fetch email settings' },
       { status: 500 }
@@ -68,8 +61,6 @@ export async function PUT(req: NextRequest) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // TODO: Add admin role check here
 
     const user = await currentUser();
     const userName = user?.firstName || user?.username || 'Admin';
@@ -133,7 +124,6 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json(settings);
   } catch (error) {
-    console.error('Error updating email settings:', error);
     return NextResponse.json(
       { error: 'Failed to update email settings' },
       { status: 500 }

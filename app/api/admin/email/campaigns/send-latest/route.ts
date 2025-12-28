@@ -87,7 +87,6 @@ export async function POST() {
 
     return NextResponse.json({ ok: true, results, campaignId: campaign.id });
   } catch (error) {
-    console.error('Error sending latest campaign:', error);
     return NextResponse.json(
       { error: 'Failed to send campaign' },
       { status: 500 }
