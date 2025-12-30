@@ -125,7 +125,65 @@ Email sent: <message-id>
 
 Check your Gmail inbox for the test email.
 
-## Step 7: Start Development
+## Step 7: Grant Admin Privileges
+
+### Method 1: Using Clerk Dashboard (Recommended)
+
+1. **Go to Clerk Dashboard:**
+   - Visit https://dashboard.clerk.com
+   - Select your project
+
+2. **Add Admin Role to User:**
+   - Go to "Users" section
+   - Click on the user who should be admin
+   - Scroll to "Metadata" section
+   - Click "Edit" on **Public Metadata**
+   - Add the following JSON:
+   ```json
+   {
+     "role": "admin"
+   }
+   ```
+   - Click "Save"
+
+3. **Verify Admin Access:**
+   - Log in with that user account
+   - Navigate to `/admin` routes (e.g., `/admin/email/campaigns`)
+   - You should now have access to admin features
+
+### Method 2: Using Clerk API (Programmatic)
+
+If you need to grant admin access programmatically:
+
+```javascript
+// Example: Update user metadata via Clerk API
+const response = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+  method: 'PATCH',
+  headers: {
+    'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    public_metadata: {
+      role: 'admin'
+    }
+  })
+});
+```
+
+### Admin Routes Available:
+- `/admin/email/campaigns` - Campaign management
+- `/admin/email/settings` - Email settings
+- `/admin/logs` - System logs
+- `/admin/docs/email-system` - Email system documentation
+
+### Security Notes:
+- Admin access is controlled via Clerk's public metadata
+- The middleware checks for `role: "admin"` in user metadata
+- Only grant admin access to trusted users
+- Remove admin role by editing metadata and deleting the role field
+
+## Step 8: Start Development
 
 ```bash
 npm run dev
@@ -133,7 +191,7 @@ npm run dev
 
 Visit http://localhost:3000
 
-## Step 8: Production DNS Setup (Optional but Recommended)
+## Step 9: Production DNS Setup (Optional but Recommended)
 
 ### For Production Email Deliverability:
 
@@ -197,6 +255,7 @@ Visit http://localhost:3000
 - [ ] `npx prisma db push` completed
 - [ ] `npx prisma generate` completed
 - [ ] Test SMTP: `node smtp-test.mjs` ✓
+- [ ] Admin role granted via Clerk Dashboard
 - [ ] Dev server running: `npm run dev`
 - [ ] Test recipients added
 - [ ] Campaign sent and received ✓
